@@ -27,6 +27,21 @@ export class AuthController {
     return this.authService.logout(userId);
   }
 
+  @MessagePattern('verify_email')
+  async verifyEmail(@Payload() token: string) {
+    return this.authService.verifyEmail(token);
+  }
+
+  @MessagePattern('request_password_reset')
+  async requestPasswordReset(@Payload() email: string) {
+    return this.authService.requestPasswordReset(email);
+  }
+
+  @MessagePattern('reset_password')
+  async resetPassword(@Payload() dto: any) {
+    return this.authService.resetPassword(dto);
+  }
+
   @MessagePattern('validate_token')
   async validateToken(@Payload() token: string) {
       // Logic for validating JWT from Gateway

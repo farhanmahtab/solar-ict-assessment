@@ -35,4 +35,19 @@ export class AuthController {
   logout(@Req() req: any) {
     return this.client.send('logout', req.user.sub);
   }
+
+  @Get('verify-email')
+  verifyEmail(@Query('token') token: string) {
+    return this.client.send('verify_email', token);
+  }
+
+  @Post('request-password-reset')
+  requestPasswordReset(@Body('email') email: string) {
+    return this.client.send('request_password_reset', email);
+  }
+
+  @Post('reset-password')
+  resetPassword(@Body() dto: any) {
+    return this.client.send('reset_password', dto);
+  }
 }

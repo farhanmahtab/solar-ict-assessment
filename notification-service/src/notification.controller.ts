@@ -10,17 +10,17 @@ export class NotificationController {
   handleUserRegistered(@Payload() data: { email: string; username: string; validationLink: string }) {
     this.notificationService.sendEmail(
       data.email,
-      'Welcome! Please validate your email',
-      `Hi ${data.username}, click here to validate: ${data.validationLink}`,
+      'validation',
+      data,
     );
   }
 
   @EventPattern('password_reset_requested')
-  handlePasswordReset(@Payload() data: { email: string; otp: string }) {
+  handlePasswordReset(@Payload() data: { email: string; otp: string; username?: string }) {
     this.notificationService.sendEmail(
       data.email,
-      'Password Reset OTP',
-      `Your OTP for password reset is: ${data.otp}`,
+      'otp',
+      data,
     );
   }
 }

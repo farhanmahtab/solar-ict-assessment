@@ -15,7 +15,7 @@ export class AuthService {
   ) {
     this.client = ClientProxyFactory.create({
       transport: Transport.TCP,
-      options: { host: 'localhost', port: 3003 }, // Notification Service
+      options: { host: '127.0.0.1', port: 3003 }, // Notification Service
     });
   }
 
@@ -45,10 +45,84 @@ export class AuthService {
     this.client.emit('user_registered', {
       email: user.email,
       username: user.username,
-      validationLink: `http://localhost:3000/auth/validate?token=${otp}`, // Simplified
+      validationLink: `http://localhost:4000/verify-email?token=${otp}`,
     });
 
     return { message: 'User registered. Please check email for validation.' };
+  }
+
+  async verifyEmail(token: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        otp: token,
+        otpExpiresAt: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid or expired validation token');
+    }
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isValidated: true,
+        otp: null,
+        otpExpiresAt: null,
+      },
+    });
+
+    return { message: 'Email validated successfully. You can now log in.' };
+  }
+
+  async requestPasswordReset(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      // For security, don't reveal if user exists, but we'll return success anyway
+      return { message: 'If your email is registered, you will receive an OTP shortly.' };
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        otp,
+        otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 mins
+      },
+    });
+
+    this.client.emit('password_reset_requested', {
+      email: user.email,
+      otp,
+    });
+
+    return { message: 'If your email is registered, you will receive an OTP shortly.' };
+  }
+
+  async resetPassword(dto: any) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email: dto.email,
+        otp: dto.otp,
+        otpExpiresAt: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid or expired OTP');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        otp: null,
+        otpExpiresAt: null,
+      },
+    });
+
+    return { message: 'Password reset successful. You can now log in.' };
   }
 
   async login(dto: LoginDto) {

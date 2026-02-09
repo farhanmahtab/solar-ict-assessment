@@ -1,9 +1,17 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 import { NotificationController } from './notification.controller';
 import { NotificationService } from './notification.service';
 
 @Module({
-  controllers: [NotificationController],
-  providers: [NotificationService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+  ],
+  controllers: [AppController, NotificationController],
+  providers: [AppService, NotificationService],
 })
 export class AppModule {}
