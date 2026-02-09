@@ -27,6 +27,16 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -42,6 +52,26 @@ export default function DashboardPage() {
   const [users, setUsers] = useState<UserType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Modal states
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+
+  // Selected user for edit/reset
+  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
+
+  // Form states
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    role: Role.STANDARD_USER,
+  });
+  const [resetPasswordData, setResetPasswordData] = useState({
+    newPassword: "",
+    confirmPassword: "",
+  });
 
   useEffect(() => {
     if (!authLoading && currentUser) {
@@ -73,6 +103,63 @@ export default function DashboardPage() {
       toast.error("Deletion failed", {
         description: "You don't have permission to perform this action.",
       });
+    }
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const { data } = await api.post("/users", formData);
+      setUsers([...users, data]);
+      setIsCreateModalOpen(false);
+      setFormData({ username: "", email: "", password: "", role: Role.STANDARD_USER });
+      toast.success("User created", { description: `${data.username} has been added.` });
+    } catch (err: any) {
+      toast.error("Error", { description: err.response?.data?.message || "Failed to create user." });
+    }
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+    try {
+      const { data } = await api.put(`/users/${selectedUser.id}`, formData);
+      setUsers(users.map((u) => (u.id === selectedUser.id ? data : u)));
+      setIsEditModalOpen(false);
+      setSelectedUser(null);
+      toast.success("User updated", { description: "Profile has been updated successfully." });
+    } catch (err: any) {
+      toast.error("Error", { description: err.response?.data?.message || "Failed to update user." });
+    }
+  };
+
+  const handleAdminResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+    if (resetPasswordData.newPassword !== resetPasswordData.confirmPassword) {
+      toast.error("Mismatch", { description: "Passwords do not match." });
+      return;
+    }
+    try {
+      await api.post(`/users/${selectedUser.id}/reset-password`, {
+        newPassword: resetPasswordData.newPassword,
+      });
+      setIsResetModalOpen(false);
+      setSelectedUser(null);
+      setResetPasswordData({ newPassword: "", confirmPassword: "" });
+      toast.success("Success", { description: "Password has been reset." });
+    } catch (err: any) {
+      toast.error("Error", { description: err.response?.data?.message || "Failed to reset password." });
+    }
+  };
+
+  const handleChangeRole = async (id: number, role: Role) => {
+    try {
+      const { data } = await api.post(`/users/${id}/role`, { role });
+      setUsers(users.map((u) => (u.id === id ? data : u)));
+      toast.success("Role updated", { description: `User role changed to ${role}.` });
+    } catch (err: any) {
+      toast.error("Error", { description: "Failed to change role." });
     }
   };
 
@@ -140,6 +227,23 @@ export default function DashboardPage() {
             </div>
             <Button
               variant="ghost"
+              className="w-full justify-start gap-3 text-gray-500 hover:text-black hover:bg-gray-50 transition-all"
+              onClick={() => {
+                setSelectedUser(currentUser);
+                setFormData({
+                  username: currentUser.username,
+                  email: currentUser.email,
+                  password: "",
+                  role: currentUser.role,
+                });
+                setIsEditModalOpen(true);
+              }}
+            >
+              <Settings size={20} />
+              <span className="font-semibold">Edit Profile</span>
+            </Button>
+            <Button
+              variant="ghost"
               className="w-full justify-start gap-3 text-gray-500 hover:text-red-500 hover:bg-red-50 transition-all"
               onClick={logout}
             >
@@ -185,7 +289,13 @@ export default function DashboardPage() {
               </p>
             </div>
             {currentUser.role === Role.GLOBAL_ADMIN && (
-              <Button className="bg-black hover:bg-gray-800 text-white shadow-lg shadow-black/5 gap-2 px-5 h-11 font-bold">
+              <Button 
+                onClick={() => {
+                  setFormData({ username: "", email: "", password: "", role: Role.STANDARD_USER });
+                  setIsCreateModalOpen(true);
+                }}
+                className="bg-black hover:bg-gray-800 text-white shadow-lg shadow-black/5 gap-2 px-5 h-11 font-bold"
+              >
                 <Plus size={18} />
                 Create New User
               </Button>
@@ -243,8 +353,24 @@ export default function DashboardPage() {
                   users={users}
                   currentUser={currentUser}
                   onDelete={handleDelete}
-                  onEdit={() => {}}
-                  onChangeRole={() => {}}
+                  onEdit={(user) => {
+                    setSelectedUser(user);
+                    setFormData({
+                      username: user.username,
+                      email: user.email,
+                      password: "",
+                      role: user.role,
+                    });
+                    setIsEditModalOpen(true);
+                  }}
+                  onChangeRole={handleChangeRole}
+                  onResetPassword={(id) => {
+                    const user = users.find((u) => u.id === id);
+                    if (user) {
+                        setSelectedUser(user);
+                        setIsResetModalOpen(true);
+                    }
+                  }}
                 />
               </CardContent>
             </Card>
@@ -270,6 +396,155 @@ export default function DashboardPage() {
           )}
         </main>
       </div>
+
+      {/* Create User Modal */}
+      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New User</DialogTitle>
+            <DialogDescription>
+              Add a new member to the workspace.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateUser} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Temporary Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <select
+                id="role"
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value as Role })}
+                className="w-full h-10 px-3 py-2 bg-white border border-gray-200 rounded-md text-sm ring-offset-white focus:outline-none focus:ring-2 focus:ring-gray-950 focus:ring-offset-2"
+              >
+                <option value={Role.STANDARD_USER}>Standard User</option>
+                <option value={Role.ADMIN_USER}>Admin User</option>
+                <option value={Role.GLOBAL_ADMIN}>Global Admin</option>
+              </select>
+            </div>
+            <DialogFooter className="pt-4">
+              <Button type="submit" className="w-full bg-black hover:bg-gray-800">
+                Create User
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User/Profile Modal */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Profile</DialogTitle>
+            <DialogDescription>
+              Update user information.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleUpdateUser} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-username">Username</Label>
+              <Input
+                id="edit-username"
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-email">Email</Label>
+              <Input
+                id="edit-email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+              />
+            </div>
+            {currentUser.id === selectedUser?.id && (
+              <div className="space-y-2 border-t pt-4 mt-4">
+                <Label htmlFor="edit-password">New Password (optional)</Label>
+                <Input
+                  id="edit-password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="Leave blank to keep current"
+                />
+              </div>
+            )}
+            <DialogFooter className="pt-4">
+              <Button type="submit" className="w-full bg-black hover:bg-gray-800">
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Admin Reset Password Modal */}
+      <Dialog open={isResetModalOpen} onOpenChange={setIsResetModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Force reset password for {selectedUser?.username}.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAdminResetPassword} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={resetPasswordData.newPassword}
+                onChange={(e) => setResetPasswordData({ ...resetPasswordData, newPassword: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={resetPasswordData.confirmPassword}
+                onChange={(e) => setResetPasswordData({ ...resetPasswordData, confirmPassword: e.target.value })}
+                required
+              />
+            </div>
+            <DialogFooter className="pt-4">
+              <Button type="submit" className="w-full bg-black hover:bg-gray-800">
+                Reset Password
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

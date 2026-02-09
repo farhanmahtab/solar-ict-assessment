@@ -26,6 +26,8 @@ import {
   ShieldAlert,
   CheckCircle2,
   Clock,
+  UserCircle,
+  Key,
   User as UserIcon,
 } from "lucide-react";
 
@@ -35,6 +37,7 @@ interface Props {
   onDelete: (id: number) => void;
   onEdit: (user: User) => void;
   onChangeRole: (id: number, role: Role) => void;
+  onResetPassword: (id: number) => void;
 }
 
 export function UserManagementTable({
@@ -43,6 +46,7 @@ export function UserManagementTable({
   onDelete,
   onEdit,
   onChangeRole,
+  onResetPassword,
 }: Props) {
   const getRoleBadge = (role: Role) => {
     switch (role) {
@@ -156,6 +160,16 @@ export function UserManagementTable({
                       <UserCog size={16} className="text-gray-400" />
                       Edit Profile
                     </DropdownMenuItem>
+
+                    {(currentUser.role === Role.ADMIN_USER || currentUser.role === Role.GLOBAL_ADMIN) && (
+                      <DropdownMenuItem
+                        onClick={() => onResetPassword(user.id)}
+                        className="gap-2 focus:bg-gray-50 cursor-pointer rounded-md text-sm py-2 px-2 transition-colors"
+                      >
+                        <Key size={16} className="text-gray-400" />
+                        Reset Password
+                      </DropdownMenuItem>
+                    )}
 
                     {currentUser.role === Role.GLOBAL_ADMIN && (
                       <>
