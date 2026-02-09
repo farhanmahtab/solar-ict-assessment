@@ -1,7 +1,8 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateUserDto, ChangeRoleDto } from './dto/users.dto';
+import { UpdateUserDto, ChangeRoleDto, CreateUserDto, AdminResetPasswordDto } from './dto/users.dto';
 import { Role } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -9,9 +10,7 @@ export class UsersService {
 
   async findAll(requester: { id: number; role: Role }) {
     if (requester.role === Role.STANDARD_USER) {
-        // Standard user can only see themselves? Requirements say "Standard User (Read) Basic account management"
-        // Usually list is for admins.
-        return this.prisma.user.findMany({ where: { id: requester.id } });
+      return this.prisma.user.findMany({ where: { id: requester.id } });
     }
     return this.prisma.user.findMany();
   }
@@ -23,6 +22,33 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
     return user;
+  }
+
+  async create(dto: CreateUserDto, requester: { id: number; role: Role }) {
+    if (requester.role === Role.STANDARD_USER) {
+      throw new ForbiddenException('Standard users cannot create users');
+    }
+
+    const existingUser = await this.prisma.user.findFirst({
+      where: { OR: [{ email: dto.email }, { username: dto.username }] },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException('User already exists');
+    }
+
+    const defaultPassword = dto.password || 'TemporaryPassword123!';
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+    return this.prisma.user.create({
+      data: {
+        username: dto.username,
+        email: dto.email,
+        password: hashedPassword,
+        role: dto.role || Role.STANDARD_USER,
+        isValidated: true, // Admin created users are pre-validated or handled via reset
+      },
+    });
   }
 
   async update(id: number, dto: UpdateUserDto, requester: { id: number; role: Role }) {
@@ -38,9 +64,33 @@ export class UsersService {
       throw new ForbiddenException('Admins cannot edit Global Admins');
     }
 
+    const updateData: any = { ...dto };
+    if (dto.password) {
+      updateData.password = await bcrypt.hash(dto.password, 10);
+    }
+
     return this.prisma.user.update({
       where: { id },
-      data: dto,
+      data: updateData,
+    });
+  }
+
+  async adminResetPassword(id: number, dto: AdminResetPasswordDto, requester: { id: number; role: Role }) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+
+    if (requester.role === Role.STANDARD_USER) {
+      throw new ForbiddenException('Standard users cannot reset others passwords');
+    }
+
+    if (requester.role === Role.ADMIN_USER && user.role === Role.GLOBAL_ADMIN) {
+      throw new ForbiddenException('Admins cannot reset Global Admin passwords');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+    return this.prisma.user.update({
+      where: { id },
+      data: { password: hashedPassword },
     });
   }
 

@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UsersService } from './users.service';
-import { UpdateUserDto, ChangeRoleDto } from './dto/users.dto';
+import { UpdateUserDto, ChangeRoleDto, CreateUserDto, AdminResetPasswordDto } from './dto/users.dto';
 import { Role } from '@prisma/client';
 
 @Controller()
@@ -21,6 +21,16 @@ export class UsersController {
   @MessagePattern('update_user')
   async update(@Payload() data: { id: number; dto: UpdateUserDto; requester: { id: number; role: Role } }) {
     return this.usersService.update(data.id, data.dto, data.requester);
+  }
+
+  @MessagePattern('admin_create_user')
+  async create(@Payload() data: { dto: CreateUserDto; requester: { id: number; role: Role } }) {
+    return this.usersService.create(data.dto, data.requester);
+  }
+
+  @MessagePattern('admin_reset_password')
+  async adminResetPassword(@Payload() data: { id: number; dto: AdminResetPasswordDto; requester: { id: number; role: Role } }) {
+    return this.usersService.adminResetPassword(data.id, data.dto, data.requester);
   }
 
   @MessagePattern('delete_user')

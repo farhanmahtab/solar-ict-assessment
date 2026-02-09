@@ -34,6 +34,16 @@ export class UsersController {
     return this.client.send('delete_user', { id, requester: { id: req.user.sub, role: req.user.role } });
   }
 
+  @Post()
+  create(@Body() dto: any, @Req() req: any) {
+    return this.client.send('admin_create_user', { dto, requester: { id: req.user.sub, role: req.user.role } });
+  }
+
+  @Post(':id/reset-password')
+  adminResetPassword(@Param('id', ParseIntPipe) id: number, @Body() dto: any, @Req() req: any) {
+    return this.client.send('admin_reset_password', { id, dto, requester: { id: req.user.sub, role: req.user.role } });
+  }
+
   @Post(':id/role')
   changeRole(@Param('id', ParseIntPipe) id: number, @Body() dto: any, @Req() req: any) {
     return this.client.send('change_role', { id, dto, requester: { id: req.user.sub, role: req.user.role } });
