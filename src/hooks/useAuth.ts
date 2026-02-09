@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useState } from 'react';
-import { User, Role } from '@/types';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { User, Role } from "@/types";
+import { useRouter } from "next/navigation";
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -9,34 +9,34 @@ export function useAuth() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem("accessToken");
     if (!token) {
       setLoading(false);
       return;
     }
 
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = JSON.parse(atob(token.split(".")[1]));
       setUser({
         id: payload.sub,
         username: payload.username,
         role: payload.role as Role,
-        email: '', // Not in payload usually
+        email: "",
         permissions: payload.permissions || [],
         isValidated: true,
-        createdAt: '',
+        createdAt: "",
       });
     } catch (e) {
-      console.error('Failed to parse token');
+      console.error(`Failed to parse token\n error: ${e}`);
     } finally {
       setLoading(false);
     }
   }, []);
 
   const logout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    router.push('/login');
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    router.push("/login");
   };
 
   return { user, loading, logout };

@@ -26,10 +26,10 @@ import {
   ShieldAlert,
   CheckCircle2,
   Clock,
-  UserCircle,
   Key,
   User as UserIcon,
 } from "lucide-react";
+import { getPermissions } from "@/lib/utils";
 
 interface Props {
   users: User[];
@@ -100,79 +100,86 @@ export function UserManagementTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((user) => (
-            <TableRow
-              key={user.id}
-              className="group border-gray-50 hover:bg-gray-50/30 transition-colors"
-            >
-              <TableCell className="py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200 group-hover:bg-white transition-colors">
-                    <UserIcon size={18} />
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900 leading-none mb-1">
-                      {user.username}
-                    </div>
-                    <div className="text-xs text-gray-400 font-medium">
-                      {user.email}
-                    </div>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="py-4">
-                {user.isValidated ? (
-                  <div className="flex items-center gap-1.5 text-green-600 font-semibold text-xs bg-green-50 w-fit px-2 py-0.5 rounded-full">
-                    <CheckCircle2 size={12} />
-                    Validated
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1.5 text-amber-600 font-semibold text-xs bg-amber-50 w-fit px-2 py-0.5 rounded-full">
-                    <Clock size={12} />
-                    Pending
-                  </div>
-                )}
-              </TableCell>
-              <TableCell className="py-4">{getRoleBadge(user.role)}</TableCell>
-              <TableCell className="text-right py-4">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="h-8 w-8 p-0 hover:bg-white border-transparent hover:border-gray-100 border transition-all"
-                    >
-                      <span className="sr-only">Open menu</span>
-                      <MoreHorizontal className="h-4 w-4 text-gray-400" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="end"
-                    className="w-48 p-1.5 border-gray-200/60 shadow-xl shadow-gray-200/40"
-                  >
-                    <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-2 py-1.5">
-                      Manage {user.username}
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-gray-100" />
-                    <DropdownMenuItem
-                      onClick={() => onEdit(user)}
-                      className="gap-2 focus:bg-gray-50 cursor-pointer rounded-md text-sm py-2 px-2 transition-colors"
-                    >
-                      <UserCog size={16} className="text-gray-400" />
-                      Edit Profile
-                    </DropdownMenuItem>
+          {users.map((user) => {
+            const permissions = getPermissions(currentUser, user);
 
-                    {(currentUser.role === Role.ADMIN_USER || currentUser.role === Role.GLOBAL_ADMIN) && (
-                      <DropdownMenuItem
-                        onClick={() => onResetPassword(user.id)}
-                        className="gap-2 focus:bg-gray-50 cursor-pointer rounded-md text-sm py-2 px-2 transition-colors"
+            return (
+              <TableRow
+                key={user.id}
+                className="group border-gray-50 hover:bg-gray-50/30 transition-colors"
+              >
+                <TableCell className="py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200 group-hover:bg-white transition-colors">
+                      <UserIcon size={18} />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900 leading-none mb-1">
+                        {user.username}
+                      </div>
+                      <div className="text-xs text-gray-400 font-medium">
+                        {user.email}
+                      </div>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="py-4">
+                  {user.isValidated ? (
+                    <div className="flex items-center gap-1.5 text-green-600 font-semibold text-xs bg-green-50 w-fit px-2 py-0.5 rounded-full">
+                      <CheckCircle2 size={12} />
+                      Validated
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 text-amber-600 font-semibold text-xs bg-amber-50 w-fit px-2 py-0.5 rounded-full">
+                      <Clock size={12} />
+                      Pending
+                    </div>
+                  )}
+                </TableCell>
+                <TableCell className="py-4">
+                  {getRoleBadge(user.role)}
+                </TableCell>
+                <TableCell className="text-right py-4">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0 hover:bg-white border-transparent hover:border-gray-100 border transition-all"
                       >
-                        <Key size={16} className="text-gray-400" />
-                        Reset Password
-                      </DropdownMenuItem>
-                    )}
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4 text-gray-400" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="w-48 p-1.5 border-gray-200/60 shadow-xl shadow-gray-200/40"
+                    >
+                      <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-2 py-1.5">
+                        Manage {user.username}
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator className="bg-gray-100" />
 
-                    {currentUser.role === Role.GLOBAL_ADMIN && (
-                      <>
+                      {permissions.canEdit && (
+                        <DropdownMenuItem
+                          onClick={() => onEdit(user)}
+                          className="gap-2 focus:bg-gray-50 cursor-pointer rounded-md text-sm py-2 px-2 transition-colors"
+                        >
+                          <UserCog size={16} className="text-gray-400" />
+                          Edit Profile
+                        </DropdownMenuItem>
+                      )}
+
+                      {permissions.canResetPassword && (
+                        <DropdownMenuItem
+                          onClick={() => onResetPassword(user.id)}
+                          className="gap-2 focus:bg-gray-50 cursor-pointer rounded-md text-sm py-2 px-2 transition-colors"
+                        >
+                          <Key size={16} className="text-gray-400" />
+                          Reset Password
+                        </DropdownMenuItem>
+                      )}
+
+                      {permissions.canChangeRole && (
                         <DropdownMenuItem
                           onClick={() =>
                             onChangeRole(
@@ -185,23 +192,30 @@ export function UserManagementTable({
                           className="gap-2 focus:bg-gray-50 cursor-pointer rounded-md text-sm py-2 px-2 transition-colors"
                         >
                           <ShieldAlert size={16} className="text-gray-400" />
-                          Toggle Admin Status
+                          {user.role === Role.ADMIN_USER
+                            ? "Demote to User"
+                            : "Promote to Admin"}
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator className="bg-gray-100" />
-                        <DropdownMenuItem
-                          onClick={() => onDelete(user.id)}
-                          className="gap-2 focus:bg-red-50 focus:text-red-600 cursor-pointer rounded-md text-sm py-2 px-2 transition-colors text-red-500 font-semibold"
-                        >
-                          <Trash2 size={16} />
-                          Delete User
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
+                      )}
+
+                      {permissions.canDelete && (
+                        <>
+                          <DropdownMenuSeparator className="bg-gray-100" />
+                          <DropdownMenuItem
+                            onClick={() => onDelete(user.id)}
+                            className="gap-2 focus:bg-red-50 focus:text-red-600 cursor-pointer rounded-md text-sm py-2 px-2 transition-colors text-red-500 font-semibold"
+                          >
+                            <Trash2 size={16} />
+                            Delete User
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

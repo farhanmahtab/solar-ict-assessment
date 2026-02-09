@@ -6,10 +6,19 @@ import Link from "next/link";
 import { Lock, User, Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { PasswordInput } from "@/components/ui/password-input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import api from "@/lib/api";
+import { AxiosError } from "axios";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ username: "", password: "" });
@@ -19,7 +28,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       const { data } = await api.post("/auth/login", form);
       localStorage.setItem("accessToken", data.accessToken);
@@ -28,9 +37,12 @@ export default function LoginPage() {
         description: "You have successfully signed in.",
       });
       router.push("/dashboard");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>;
       toast.error("Authentication failed", {
-        description: err.response?.data?.message || "Invalid credentials. Please try again.",
+        description:
+          error.response?.data?.message ||
+          "Invalid credentials. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -39,14 +51,16 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50/50 p-4 animate-fade-in">
-      <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
-      
+      <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] background-size:16px_16px mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)" />
+
       <Card className="w-full max-w-md relative border-gray-200/60 shadow-xl shadow-gray-200/40 backdrop-blur-sm bg-white/80">
         <CardHeader className="space-y-1 pb-8">
           <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-black/10">
             <Lock className="text-white w-6 h-6" />
           </div>
-          <CardTitle className="text-3xl font-bold tracking-tight text-gray-900">Welcome back</CardTitle>
+          <CardTitle className="text-3xl font-bold tracking-tight text-gray-900">
+            Welcome back
+          </CardTitle>
           <CardDescription className="text-gray-500 text-base">
             Enter your credentials to access your account
           </CardDescription>
@@ -54,7 +68,12 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-sm font-semibold text-gray-700">Username</Label>
+              <Label
+                htmlFor="username"
+                className="text-sm font-semibold text-gray-700"
+              >
+                Username
+              </Label>
               <div className="relative group">
                 <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 group-focus-within:text-black transition-colors" />
                 <Input
@@ -62,7 +81,9 @@ export default function LoginPage() {
                   placeholder="johndoe"
                   className="pl-10 h-11 border-gray-200 bg-gray-50/50 focus:bg-white transition-all duration-200 rounded-lg"
                   value={form.username}
-                  onChange={(e) => setForm({ ...form, username: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, username: e.target.value })
+                  }
                   required
                   disabled={isLoading}
                 />
@@ -70,7 +91,12 @@ export default function LoginPage() {
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm font-semibold text-gray-700">Password</Label>
+                <Label
+                  htmlFor="password"
+                  className="text-sm font-semibold text-gray-700"
+                >
+                  Password
+                </Label>
                 <Link
                   href="/forgot-password"
                   className="text-sm font-medium text-gray-400 hover:text-black transition-colors"
@@ -79,14 +105,15 @@ export default function LoginPage() {
                 </Link>
               </div>
               <div className="relative group">
-                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 group-focus-within:text-black transition-colors" />
-                <Input
+                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 group-focus-within:text-black transition-colors z-10" />
+                <PasswordInput
                   id="password"
-                  type="password"
                   placeholder="••••••••"
                   className="pl-10 h-11 border-gray-200 bg-gray-50/50 focus:bg-white transition-all duration-200 rounded-lg"
                   value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, password: e.target.value })
+                  }
                   required
                   disabled={isLoading}
                 />
@@ -116,9 +143,6 @@ export default function LoginPage() {
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-gray-100" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-gray-400 font-medium tracking-wider">or continue with</span>
-            </div>
           </div>
           <p className="text-center text-sm text-gray-500">
             Don&apos;t have an account?{" "}
@@ -126,7 +150,7 @@ export default function LoginPage() {
               href="/signup"
               className="font-bold text-gray-900 hover:underline underline-offset-4"
             >
-              Sign up for free
+              Sign up
             </Link>
           </p>
         </CardFooter>
