@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+dist/
+build/
+.next/
+out/
+
+# IDEs and System
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+*.tsbuildinfo
+
+# Environment and Logs
+.env
+.env*
+!.env.example
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Database
+prisma/dev.db
+prisma/dev.db-journal
+
+# Documentation and Misc
+Assessment_Mahi_UserManagement_sys.pdf
+coverage/
+next-env.d.ts
+*.pem
+.vercel
