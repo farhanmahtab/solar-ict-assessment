@@ -127,7 +127,7 @@ export class AuthService {
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
-      where: { username: dto.username },
+      where: { email: dto.email },
     });
 
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
@@ -138,7 +138,7 @@ export class AuthService {
       throw new UnauthorizedException('Please validate your email first');
     }
 
-    const tokens = await this.getTokens(user.id, user.username, user.role);
+    const tokens = await this.getTokens(user.id, user.username, user.role, user.email, user.createdAt.toISOString());
     await this.updateRefreshToken(user.id, tokens.refreshToken);
 
     return tokens;
@@ -152,14 +152,14 @@ export class AuthService {
     });
   }
 
-  async getTokens(userId: number, username: string, role: string) {
+  async getTokens(userId: number, username: string, role: string, email: string, createdAt: string) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
-        { sub: userId, username, role },
+        { sub: userId, username, role, email, createdAt },
         { secret: process.env.JWT_ACCESS_SECRET, expiresIn: '15m' },
       ),
       this.jwtService.signAsync(
-        { sub: userId, username, role },
+        { sub: userId, username, role, email, createdAt },
         { secret: process.env.JWT_REFRESH_SECRET, expiresIn: '7d' },
       ),
     ]);
@@ -174,15 +174,24 @@ export class AuthService {
     });
   }
 
-  async refreshTokens(userId: number, refreshToken: string) {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user || !user.refreshToken) throw new UnauthorizedException();
+  async refreshTokens(refreshToken: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+      const userId = payload.sub;
 
-    const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
-    if (!isMatch) throw new UnauthorizedException();
+      const user = await this.prisma.user.findUnique({ where: { id: userId } });
+      if (!user || !user.refreshToken) throw new UnauthorizedException('Invalid session');
 
-    const tokens = await this.getTokens(user.id, user.username, user.role);
-    await this.updateRefreshToken(user.id, tokens.refreshToken);
-    return tokens;
+      const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+      if (!isMatch) throw new UnauthorizedException('Session mismatch');
+
+      const tokens = await this.getTokens(user.id, user.username, user.role, user.email, user.createdAt.toISOString());
+      await this.updateRefreshToken(user.id, tokens.refreshToken);
+      return tokens;
+    } catch (e) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
   }
 }

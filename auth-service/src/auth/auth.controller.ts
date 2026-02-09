@@ -18,8 +18,8 @@ export class AuthController {
   }
 
   @MessagePattern('refresh')
-  async refresh(@Payload() data: { userId: number; refreshToken: string }) {
-    return this.authService.refreshTokens(data.userId, data.refreshToken);
+  async refresh(@Payload() data: { refreshToken: string }) {
+    return this.authService.refreshTokens(data.refreshToken);
   }
 
   @MessagePattern('logout')
