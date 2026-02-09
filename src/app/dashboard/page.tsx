@@ -28,6 +28,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
+interface StatCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  description: string;
+  trend?: "up" | "stable" | "down";
+  secondary?: string;
+}
+
 export default function DashboardPage() {
   const { user: currentUser, logout, loading: authLoading } = useAuth();
   const [users, setUsers] = useState<UserType[]>([]);
@@ -291,7 +300,14 @@ function NavItem({
   );
 }
 
-function StatCard({ icon, label, value, description, trend, secondary }: any) {
+function StatCard({
+  icon,
+  label,
+  value,
+  description,
+  trend,
+  secondary,
+}: StatCardProps) {
   return (
     <Card className="border-none ring-1 ring-gray-100 shadow-xl shadow-gray-200/20 bg-white hover:ring-gray-200 transition-all duration-300">
       <CardContent className="p-6">

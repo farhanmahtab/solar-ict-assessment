@@ -72,7 +72,7 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="password" className="text-sm font-semibold text-gray-700">Password</Label>
                 <Link
-                  href="/reset-password"
+                  href="/forgot-password"
                   className="text-sm font-medium text-gray-400 hover:text-black transition-colors"
                 >
                   Forgot password?
