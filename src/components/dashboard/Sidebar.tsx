@@ -41,10 +41,10 @@ export function Sidebar({
             <ShieldCheck className="text-white h-5 w-5" />
           </div>
           <span className="font-bold text-xl tracking-tight">
-            Admin
-            <span className="text-gray-400 font-medium font-mono text-sm ml-1 select-none">
+            Solar ICT
+            {/* <span className="text-gray-400 font-medium font-mono text-sm ml-1 select-none">
               v1.0
-            </span>
+            </span> */}
           </span>
           <Button
             variant="ghost"

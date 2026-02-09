@@ -47,6 +47,7 @@ export default function DashboardPage() {
     openCreateModal,
     openEditModal,
     openResetModal,
+    accessLevelDescription,
   } = useUserManagement(currentUser, authLoading);
 
   if (authLoading || loading) {
@@ -112,7 +113,7 @@ export default function DashboardPage() {
               icon={<ShieldCheck className="text-gray-900" />}
               label="Permissions Tier"
               value={currentUser.role.split("_")[0]}
-              description="High Access Level"
+              description={accessLevelDescription}
               secondary={currentUser.role.split("_")[1] || ""}
             />
           </div>

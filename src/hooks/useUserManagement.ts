@@ -21,6 +21,13 @@ export function useUserManagement(
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
+  const accessLevelDescription =
+    currentUser?.role === Role.GLOBAL_ADMIN
+      ? "Full System Access"
+      : currentUser?.role === Role.ADMIN_USER
+        ? "Administrative Access"
+        : "Basic Access Level";
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -195,5 +202,6 @@ export function useUserManagement(
     openEditModal,
     openResetModal,
     fetchUsers,
+    accessLevelDescription,
   };
 }
