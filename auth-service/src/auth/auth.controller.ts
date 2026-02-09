@@ -1,24 +1,29 @@
-import { Controller } from '@nestjs/common';
+import { Controller, UseFilters } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { HttpToRpcExceptionFilter } from '../common/filters/http-to-rpc-exception.filter';
 
+@UseFilters(new HttpToRpcExceptionFilter())
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @MessagePattern('register')
   async register(@Payload() dto: RegisterDto) {
+    console.log('[Auth Service] Handling register:', dto.email);
     return this.authService.register(dto);
   }
 
   @MessagePattern('login')
   async login(@Payload() dto: LoginDto) {
+    console.log('[Auth Service] Handling login:', dto.email);
     return this.authService.login(dto);
   }
 
   @MessagePattern('refresh')
   async refresh(@Payload() data: { refreshToken: string }) {
+    console.log('[Auth Service] Handling refresh');
     return this.authService.refreshTokens(data.refreshToken);
   }
 

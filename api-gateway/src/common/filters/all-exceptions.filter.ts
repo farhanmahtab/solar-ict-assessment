@@ -11,15 +11,23 @@ export class AllExceptionsFilter implements RpcExceptionFilter<RpcException> {
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
 
-    if (exception.status && exception.message) {
-      status = exception.status;
-      message = exception.message;
-    } else if (exception.response && typeof exception.response === 'object') {
-       status = exception.status || exception.response.statusCode || 500;
-       message = exception.response.message || exception.message;
-    } else if (typeof exception === 'object') {
-      status = exception.statusCode || exception.status || 500;
-      message = exception.message || 'Error occurred in microservice';
+    if (typeof exception === 'object' && exception !== null) {
+      // Prioritize structured response object from HttpExceptions
+      const innerResponse = exception.response;
+      const statusCode = (innerResponse && (innerResponse.statusCode || innerResponse.status)) || exception.statusCode || exception.status;
+      const innerMessage = (innerResponse && innerResponse.message) || exception.message;
+
+      if (statusCode) {
+        if (typeof statusCode === 'number') {
+          status = statusCode;
+        } else if (typeof statusCode === 'string' && !isNaN(parseInt(statusCode))) {
+          status = parseInt(statusCode);
+        }
+      }
+
+      if (innerMessage) {
+        message = Array.isArray(innerMessage) ? innerMessage[0] : innerMessage;
+      }
     }
 
     return response.status(status).json({
