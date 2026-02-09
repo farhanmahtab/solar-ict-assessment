@@ -27,9 +27,11 @@ import {
   CheckCircle2,
   Clock,
   Key,
+  Eye,
   User as UserIcon,
 } from "lucide-react";
 import { getPermissions } from "@/lib/utils";
+import Link from "next/link";
 
 interface Props {
   users: User[];
@@ -158,6 +160,15 @@ export function UserManagementTable({
                         Manage {user.username}
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator className="bg-gray-100" />
+                      <DropdownMenuItem asChild>
+                        <Link
+                          href={`/dashboard/users/${user.id}`}
+                          className="flex items-center gap-2 focus:bg-gray-50 cursor-pointer rounded-md text-sm py-2 px-2 transition-colors w-full"
+                        >
+                          <Eye size={16} className="text-gray-400" />
+                          View Details
+                        </Link>
+                      </DropdownMenuItem>
 
                       {permissions.canEdit && (
                         <DropdownMenuItem

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Lock, User, Loader2, ArrowRight } from "lucide-react";
+import { Lock, Mail, Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -21,7 +21,7 @@ import api from "@/lib/api";
 import { AxiosError } from "axios";
 
 export default function LoginPage() {
-  const [form, setForm] = useState({ username: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -69,20 +69,21 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label
-                htmlFor="username"
+                htmlFor="email"
                 className="text-sm font-semibold text-gray-700"
               >
-                Username
+                Email Address
               </Label>
               <div className="relative group">
-                <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 group-focus-within:text-black transition-colors" />
+                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 group-focus-within:text-black transition-colors" />
                 <Input
-                  id="username"
-                  placeholder="johndoe"
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
                   className="pl-10 h-11 border-gray-200 bg-gray-50/50 focus:bg-white transition-all duration-200 rounded-lg"
-                  value={form.username}
+                  value={form.email}
                   onChange={(e) =>
-                    setForm({ ...form, username: e.target.value })
+                    setForm({ ...form, email: e.target.value })
                   }
                   required
                   disabled={isLoading}

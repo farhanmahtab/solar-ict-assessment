@@ -11,6 +11,7 @@ interface ApiErrorResponse {
 export function useUserManagement(
   currentUser: User | null,
   authLoading: boolean,
+  onUpdateSuccess?: () => void,
 ) {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,9 +100,19 @@ export function useUserManagement(
     e.preventDefault();
     if (!selectedUser) return;
     try {
-      const { data } = await api.put(`/users/${selectedUser.id}`, formData);
+      const payload: any = { ...formData };
+      if (!payload.password || payload.password.trim() === "") {
+        delete payload.password;
+      }
+      const { data } = await api.put(`/users/${selectedUser.id}`, payload);
       setUsers(users.map((u) => (u.id === selectedUser.id ? data : u)));
       setIsEditModalOpen(false);
+      
+      // If the updated user is the current user, refresh the auth state
+      if (currentUser && selectedUser.id === currentUser.id && onUpdateSuccess) {
+        onUpdateSuccess();
+      }
+
       setSelectedUser(null);
       toast.success("User updated", {
         description: "Profile has been updated successfully.",

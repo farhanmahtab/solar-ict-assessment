@@ -20,11 +20,12 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
-  const { user: currentUser, logout, loading: authLoading } = useAuth();
+  const { user: currentUser, logout, loading: authLoading, refresh } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+  const router = useRouter()
   const {
     users,
     loading,
@@ -48,7 +49,7 @@ export default function DashboardPage() {
     openEditModal,
     openResetModal,
     accessLevelDescription,
-  } = useUserManagement(currentUser, authLoading);
+  } = useUserManagement(currentUser, authLoading, refresh);
 
   if (authLoading || loading) {
     return (
@@ -157,8 +158,8 @@ export default function DashboardPage() {
                   restricted to authorized personnel.
                 </CardDescription>
               </div>
-              <Button variant="outline" className="font-bold border-gray-200">
-                View Public Profile
+              <Button variant="outline" className="font-bold border-gray-200" onClick={() => router.push('/dashboard/profile')}>
+                View Profile
               </Button>
             </Card>
           )}

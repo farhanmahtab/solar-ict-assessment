@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface SidebarProps {
   currentUser: User;
@@ -60,27 +61,34 @@ export function Sidebar({
           <NavItem
             icon={<LayoutDashboard size={20} />}
             label="Dashboard"
+            href="/dashboard"
             active
           />
-          <NavItem icon={<Users size={20} />} label="Users" />
-          <NavItem icon={<Activity size={20} />} label="Logs" />
-          <NavItem icon={<Settings size={20} />} label="Settings" />
+          <NavItem 
+            icon={<Users size={20} />} 
+            label="Users" 
+            href="/dashboard"
+          />
+          <NavItem icon={<Activity size={20} />} label="Logs" href="/dashboard" />
+          <NavItem icon={<Settings size={20} />} label="Settings" href="/dashboard" />
         </nav>
 
         <div className="p-4 border-t border-gray-50">
-          <div className="p-3 bg-gray-50 rounded-xl flex items-center gap-3 mb-2">
-            <div className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 shadow-sm">
-              <UserCircle size={22} />
+          <Link href="/dashboard/profile" className="block p-3 hover:bg-gray-50 rounded-xl transition-all mb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 shadow-sm">
+                <UserCircle size={22} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-gray-900 truncate">
+                  {currentUser.username}
+                </p>
+                <p className="text-[10px] font-bold text-gray-400 truncate uppercase tracking-widest">
+                  {currentUser.role.replace("_", " ")}
+                </p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-gray-900 truncate">
-                {currentUser.username}
-              </p>
-              <p className="text-[10px] font-bold text-gray-400 truncate uppercase tracking-widest">
-                {currentUser.role.replace("_", " ")}
-              </p>
-            </div>
-          </div>
+          </Link>
           <Button
             variant="ghost"
             className="w-full justify-start gap-3 text-gray-500 hover:text-black hover:bg-gray-50 transition-all mb-1"
@@ -106,14 +114,17 @@ export function Sidebar({
 function NavItem({
   icon,
   label,
+  href,
   active = false,
 }: {
   icon: React.ReactNode;
   label: string;
+  href: string;
   active?: boolean;
 }) {
   return (
-    <button
+    <Link
+      href={href}
       className={`
       w-full flex items-center gap-3 px-3 py-2 rounded-lg font-bold text-sm transition-all
       ${
@@ -125,6 +136,6 @@ function NavItem({
     >
       {icon}
       {label}
-    </button>
+    </Link>
   );
 }
