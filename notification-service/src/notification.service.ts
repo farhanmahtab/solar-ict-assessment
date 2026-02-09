@@ -60,7 +60,7 @@ export class NotificationService implements OnModuleInit {
       <body>
         <div class="container">
           <div class="header">
-            <div style="color: white; font-weight: 900; font-size: 20px;">WORKSPACE</div>
+            <div style="color: white; font-weight: 900; font-size: 20px;">SOLAR ICT</div>
           </div>
           <div class="content">
             <h1 class="title">${title}</h1>
