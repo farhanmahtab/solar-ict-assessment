@@ -23,9 +23,14 @@ import {
 import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
-  const { user: currentUser, logout, loading: authLoading, refresh } = useAuth();
+  const {
+    user: currentUser,
+    logout,
+    loading: authLoading,
+    refresh,
+  } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
   const {
     users,
     loading,
@@ -106,7 +111,7 @@ export default function DashboardPage() {
             <StatCard
               icon={<Users className="text-gray-900" />}
               label="Active Users"
-              value={users.length.toString()}
+              value={users.length?.toString()}
               description="+2 from last hour"
               trend="up"
             />
@@ -158,7 +163,11 @@ export default function DashboardPage() {
                   restricted to authorized personnel.
                 </CardDescription>
               </div>
-              <Button variant="outline" className="font-bold border-gray-200" onClick={() => router.push('/dashboard/profile')}>
+              <Button
+                variant="outline"
+                className="font-bold border-gray-200"
+                onClick={() => router.push("/dashboard/profile")}
+              >
                 View Profile
               </Button>
             </Card>

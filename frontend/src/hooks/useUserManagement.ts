@@ -8,6 +8,13 @@ interface ApiErrorResponse {
   message?: string;
 }
 
+interface UpdateUserPayload {
+  username?: string;
+  email?: string;
+  password?: string;
+  role?: Role;
+}
+
 export function useUserManagement(
   currentUser: User | null,
   authLoading: boolean,
@@ -49,7 +56,7 @@ export function useUserManagement(
   const fetchUsers = async () => {
     try {
       const { data } = await api.get("/users");
-      setUsers(data);
+      setUsers(data?.users);
     } catch (err) {
       toast.error("Error", {
         description: `Failed to fetch users data`,
@@ -100,16 +107,20 @@ export function useUserManagement(
     e.preventDefault();
     if (!selectedUser) return;
     try {
-      const payload: any = { ...formData };
+      const payload: UpdateUserPayload = { ...formData };
       if (!payload.password || payload.password.trim() === "") {
         delete payload.password;
       }
       const { data } = await api.put(`/users/${selectedUser.id}`, payload);
       setUsers(users.map((u) => (u.id === selectedUser.id ? data : u)));
       setIsEditModalOpen(false);
-      
+
       // If the updated user is the current user, refresh the auth state
-      if (currentUser && selectedUser.id === currentUser.id && onUpdateSuccess) {
+      if (
+        currentUser &&
+        selectedUser.id === currentUser.id &&
+        onUpdateSuccess
+      ) {
         onUpdateSuccess();
       }
 

@@ -1,53 +1,61 @@
-import { Controller, Post, Body, Get, Query, Req, UseGuards } from '@nestjs/common';
-import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
-import { RegisterDto, LoginDto } from './dto/auth.dto'; // I'll need to create this or copy it
+import { Controller, Post, Body, Get, Query, Req, UseGuards, OnModuleInit, Inject } from '@nestjs/common';
+import type { ClientGrpc } from '@nestjs/microservices';
+import { Observable } from 'rxjs';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
-@Controller('auth')
-export class AuthController {
-  private client: ClientProxy;
+interface AuthServiceClient {
+  register(dto: any): Observable<any>;
+  login(dto: any): Observable<any>;
+  refresh(data: { refreshToken: string }): Observable<any>;
+  logout(data: { userId: number }): Observable<any>;
+  verifyEmail(data: { token: string }): Observable<any>;
+  requestPasswordReset(data: { email: string }): Observable<any>;
+  resetPassword(dto: any): Observable<any>;
+}
 
-  constructor() {
-    this.client = ClientProxyFactory.create({
-      transport: Transport.TCP,
-      options: { host: process.env.AUTH_SERVICE_HOST, port: Number(process.env.AUTH_SERVICE_PORT) },
-    });
+@Controller('auth')
+export class AuthController implements OnModuleInit {
+  private authService: AuthServiceClient;
+
+  constructor(@Inject('AUTH_PACKAGE') private client: ClientGrpc) {}
+
+  onModuleInit() {
+    this.authService = this.client.getService<AuthServiceClient>('AuthService');
   }
 
   @Post('register')
   register(@Body() dto: any) {
-    return this.client.send('register', dto);
+    return this.authService.register(dto);
   }
 
   @Post('login')
   login(@Body() dto: any) {
-    return this.client.send('login', dto);
+    return this.authService.login(dto);
   }
 
   @Post('refresh')
-  refresh(@Body() body: { refreshToken: string }, @Req() req: any) {
-      // Typically the body contains refreshToken, and we might need userId from somewhere or body
-      return this.client.send('refresh', body);
+  refresh(@Body() body: { refreshToken: string }) {
+    return this.authService.refresh(body);
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   logout(@Req() req: any) {
-    return this.client.send('logout', req.user.sub);
+    return this.authService.logout({ userId: req.user.sub });
   }
 
   @Get('verify-email')
   verifyEmail(@Query('token') token: string) {
-    return this.client.send('verify_email', token);
+    return this.authService.verifyEmail({ token });
   }
 
   @Post('request-password-reset')
   requestPasswordReset(@Body('email') email: string) {
-    return this.client.send('request_password_reset', email);
+    return this.authService.requestPasswordReset({ email });
   }
 
   @Post('reset-password')
   resetPassword(@Body() dto: any) {
-    return this.client.send('reset_password', dto);
+    return this.authService.resetPassword(dto);
   }
 }

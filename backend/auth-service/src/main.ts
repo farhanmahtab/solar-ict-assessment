@@ -4,15 +4,18 @@ import { AuthModule } from './auth/auth.module';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
+import { join } from 'path';
+
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(AuthModule, {
-    transport: Transport.TCP,
+    transport: Transport.GRPC,
     options: {
-      host: '0.0.0.0',
-      port: Number(process.env.PORT) || 3001,
+      package: 'auth',
+      protoPath: join(process.cwd(), '../proto/auth.proto'),
+      url: `0.0.0.0:${process.env.AUTH_SERVICE_PORT || 3006}`,
     },
   });
   await app.listen();
-  console.log('Auth Service is listening...');
+  console.log('Auth Service (gRPC) is listening on port 3006...');
 }
 bootstrap();

@@ -82,12 +82,13 @@ export function UserManagementTable({
     }
   };
 
+  console.log({ users });
   return (
     <div className="rounded-xl border border-gray-100 bg-white overflow-hidden shadow-sm">
       <Table>
         <TableHeader className="bg-gray-50/50">
           <TableRow className="hover:bg-transparent border-gray-100">
-            <TableHead className="w-[300px] text-gray-400 font-bold uppercase tracking-wider text-[11px] py-4">
+            <TableHead className="w-75 text-gray-400 font-bold uppercase tracking-wider text-[11px] py-4">
               User Details
             </TableHead>
             <TableHead className="text-gray-400 font-bold uppercase tracking-wider text-[11px] py-4">

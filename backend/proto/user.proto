@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package user;
+
+service UserService {
+  rpc FindAll (FindAllRequest) returns (UserListResponse);
+  rpc FindOne (FindOneRequest) returns (UserResponse);
+  rpc Update (UpdateRequest) returns (UserResponse);
+  rpc Delete (DeleteRequest) returns (Empty);
+  rpc Create (CreateRequest) returns (UserResponse);
+  rpc AdminResetPassword (AdminResetPasswordRequest) returns (AuthResponse);
+  rpc ChangeRole (ChangeRoleRequest) returns (UserResponse);
+}
+
+enum Role {
+  GLOBAL_ADMIN = 0;
+  ADMIN_USER = 1;
+  STANDARD_USER = 2;
+}
+
+message User {
+  int32 id = 1;
+  string username = 2;
+  string email = 3;
+  Role role = 4;
+  repeated string permissions = 5;
+  string createdAt = 6;
+}
+
+message Requester {
+  int32 id = 1;
+  Role role = 2;
+}
+
+message FindAllRequest {
+  Requester requester = 1;
+}
+
+message UserListResponse {
+  repeated User users = 1;
+}
+
+message FindOneRequest {
+  int32 id = 1;
+  Requester requester = 2;
+}
+
+message UpdateRequest {
+  int32 id = 1;
+  string email = 2;
+  string username = 3;
+  repeated string permissions = 4;
+  Requester requester = 5;
+}
+
+message DeleteRequest {
+  int32 id = 1;
+  Requester requester = 2;
+}
+
+message CreateRequest {
+  string email = 1;
+  string username = 2;
+  string password = 3;
+  Role role = 4;
+  Requester requester = 5;
+}
+
+message AdminResetPasswordRequest {
+  int32 id = 1;
+  string newPassword = 2;
+  Requester requester = 3;
+}
+
+message ChangeRoleRequest {
+  int32 id = 1;
+  Role role = 2;
+  Requester requester = 3;
+}
+
+message UserResponse {
+  User user = 1;
+}
+
+message AuthResponse {
+  string message = 1;
+}
+
+message Empty {}

@@ -1,5 +1,5 @@
 import { Controller, UseFilters } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { GrpcMethod } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import { HttpToRpcExceptionFilter } from '../common/filters/http-to-rpc-exception.filter';
@@ -9,47 +9,41 @@ import { HttpToRpcExceptionFilter } from '../common/filters/http-to-rpc-exceptio
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @MessagePattern('register')
-  async register(@Payload() dto: RegisterDto) {
-    console.log('[Auth Service] Handling register:', dto.email);
+  @GrpcMethod('AuthService', 'Register')
+  async register(dto: RegisterDto) {
+    console.log('[Auth Service] gRPC Register:', dto.email);
     return this.authService.register(dto);
   }
 
-  @MessagePattern('login')
-  async login(@Payload() dto: LoginDto) {
-    console.log('[Auth Service] Handling login:', dto.email);
+  @GrpcMethod('AuthService', 'Login')
+  async login(dto: LoginDto) {
+    console.log('[Auth Service] gRPC Login:', dto.email);
     return this.authService.login(dto);
   }
 
-  @MessagePattern('refresh')
-  async refresh(@Payload() data: { refreshToken: string }) {
-    console.log('[Auth Service] Handling refresh');
+  @GrpcMethod('AuthService', 'Refresh')
+  async refresh(data: { refreshToken: string }) {
+    console.log('[Auth Service] gRPC Refresh');
     return this.authService.refreshTokens(data.refreshToken);
   }
 
-  @MessagePattern('logout')
-  async logout(@Payload() userId: number) {
-    return this.authService.logout(userId);
+  @GrpcMethod('AuthService', 'Logout')
+  async logout(data: { userId: number }) {
+    return this.authService.logout(data.userId);
   }
 
-  @MessagePattern('verify_email')
-  async verifyEmail(@Payload() token: string) {
-    return this.authService.verifyEmail(token);
+  @GrpcMethod('AuthService', 'VerifyEmail')
+  async verifyEmail(data: { token: string }) {
+    return this.authService.verifyEmail(data.token);
   }
 
-  @MessagePattern('request_password_reset')
-  async requestPasswordReset(@Payload() email: string) {
-    return this.authService.requestPasswordReset(email);
+  @GrpcMethod('AuthService', 'RequestPasswordReset')
+  async requestPasswordReset(data: { email: string }) {
+    return this.authService.requestPasswordReset(data.email);
   }
 
-  @MessagePattern('reset_password')
-  async resetPassword(@Payload() dto: any) {
+  @GrpcMethod('AuthService', 'ResetPassword')
+  async resetPassword(dto: any) {
     return this.authService.resetPassword(dto);
-  }
-
-  @MessagePattern('validate_token')
-  async validateToken(@Payload() token: string) {
-      // Logic for validating JWT from Gateway
-      // This is handled by Gateway's Guard, but Auth-service might provide verification
   }
 }

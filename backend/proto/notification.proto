@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package notification;
+
+service NotificationService {
+  rpc NotifyUserRegistered (UserRegisteredRequest) returns (Empty);
+  rpc NotifyPasswordResetRequested (PasswordResetRequestedRequest) returns (Empty);
+}
+
+message UserRegisteredRequest {
+  string email = 1;
+  string username = 2;
+  string validationLink = 3;
+}
+
+message PasswordResetRequestedRequest {
+  string email = 1;
+  string otp = 2;
+}
+
+message Empty {}

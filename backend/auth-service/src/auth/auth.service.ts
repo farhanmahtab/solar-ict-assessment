@@ -1,22 +1,28 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, OnModuleInit, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
-import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
+import type { ClientGrpc } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
+
+interface NotificationService {
+  notifyUserRegistered(data: any): any;
+  notifyPasswordResetRequested(data: any): any;
+}
 
 @Injectable()
-export class AuthService {
-  private client: ClientProxy;
+export class AuthService implements OnModuleInit {
+  private notificationService: NotificationService;
 
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) {
-    this.client = ClientProxyFactory.create({
-      transport: Transport.TCP,
-      options: { host: '127.0.0.1', port: 3003 }, // Notification Service
-    });
+    @Inject('NOTIFICATION_PACKAGE') private client: ClientGrpc,
+  ) {}
+
+  onModuleInit() {
+    this.notificationService = this.client.getService<NotificationService>('NotificationService');
   }
 
   async register(dto: RegisterDto) {
@@ -44,11 +50,11 @@ export class AuthService {
     });
 
     // Notify Notification Service
-    this.client.emit('user_registered', {
+    await firstValueFrom(this.notificationService.notifyUserRegistered({
       email: user.email,
       username: user.username,
       validationLink: `http://localhost:4000/verify-email?token=${otp}`,
-    });
+    }));
 
     return { message: 'User registered. Please check email for validation.' };
   }
@@ -93,10 +99,10 @@ export class AuthService {
       },
     });
 
-    this.client.emit('password_reset_requested', {
+    await firstValueFrom(this.notificationService.notifyPasswordResetRequested({
       email: user.email,
       otp,
-    });
+    }));
 
     return { message: 'If your email is registered, you will receive an OTP shortly.' };
   }
