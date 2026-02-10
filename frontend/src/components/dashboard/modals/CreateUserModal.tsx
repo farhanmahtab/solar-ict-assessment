@@ -10,15 +10,23 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+
+interface FormData {
+  username: string;
+  email: string;
+  password: string;
+  role: Role;
+}
 
 interface CreateUserModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  formData: any;
-  setFormData: (data: any) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  formData: FormData;
+  setFormData: (data: FormData) => void;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
 export function CreateUserModal({
@@ -43,7 +51,9 @@ export function CreateUserModal({
             <Input
               id="username"
               value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, username: e.target.value })
+              }
               required
             />
           </div>
@@ -53,17 +63,20 @@ export function CreateUserModal({
               id="email"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               required
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Temporary Password</Label>
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
             />
           </div>
           <div className="space-y-2">
@@ -71,7 +84,9 @@ export function CreateUserModal({
             <select
               id="role"
               value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value as Role })}
+              onChange={(e) =>
+                setFormData({ ...formData, role: e.target.value as Role })
+              }
               className="w-full h-10 px-3 py-2 bg-white border border-gray-200 rounded-md text-sm ring-offset-white focus:outline-none focus:ring-2 focus:ring-gray-950 focus:ring-offset-2"
             >
               <option value={Role.STANDARD_USER}>Standard User</option>

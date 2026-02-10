@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { AxiosError } from "axios";
 
 export default function ResetPasswordPage() {
   const [formData, setFormData] = useState({
@@ -33,7 +34,7 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (formData.newPassword !== formData.confirmPassword) {
       return toast.error("Passwords do not match");
@@ -48,7 +49,8 @@ export default function ResetPasswordPage() {
       });
       setIsSuccess(true);
       toast.success("Password reset successfully!");
-    } catch (error: any) {
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>;
       toast.error(error.response?.data?.message || "Failed to reset password");
     } finally {
       setLoading(false);
