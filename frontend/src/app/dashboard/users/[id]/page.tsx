@@ -7,6 +7,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { formatRole } from "@/lib/utils";
 import { User, Role } from "@/types";
 import {
   UserCircle,
@@ -142,7 +143,7 @@ export default function UserDetailPage() {
                   {targetUser.username}
                 </h1>
                 <p className="text-gray-500 font-medium">
-                  {targetUser.role.replace("_", " ")}
+                  {formatRole(targetUser.role)}
                 </p>
               </div>
             </div>
@@ -162,9 +163,9 @@ export default function UserDetailPage() {
             <StatCard
               icon={<Shield className="text-gray-900" />}
               label="Role"
-              value={targetUser.role.split("_")[0]}
+              value={formatRole(targetUser.role).split(" ")[0]}
               description="Access Permissions"
-              secondary={targetUser.role.split("_")[1]}
+              secondary={formatRole(targetUser.role).split(" ")[1] || ""}
             />
             <StatCard
               icon={<Mail className="text-gray-900" />}
@@ -206,7 +207,7 @@ export default function UserDetailPage() {
                 <DetailRow
                   icon={<ShieldCheck size={18} />}
                   label="Permissions Tier"
-                  value={targetUser.role.replace("_", " ")}
+                  value={formatRole(targetUser.role)}
                   badge
                 />
                 <DetailRow

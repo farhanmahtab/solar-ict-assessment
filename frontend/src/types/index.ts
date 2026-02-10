@@ -1,7 +1,7 @@
 export enum Role {
-  GLOBAL_ADMIN = 'GLOBAL_ADMIN',
-  ADMIN_USER = 'ADMIN_USER',
-  STANDARD_USER = 'STANDARD_USER',
+  GLOBAL_ADMIN = 0,
+  ADMIN_USER = 1,
+  STANDARD_USER = 2,
 }
 
 export interface User {

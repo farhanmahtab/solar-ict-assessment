@@ -1,5 +1,6 @@
 "use client";
 
+import { formatRole } from "@/lib/utils";
 import { User } from "@/types";
 import {
   Users,
@@ -84,7 +85,7 @@ export function Sidebar({
                   {currentUser.username}
                 </p>
                 <p className="text-[10px] font-bold text-gray-400 truncate uppercase tracking-widest">
-                  {currentUser.role.replace("_", " ")}
+                  {formatRole(currentUser.role)}
                 </p>
               </div>
             </div>

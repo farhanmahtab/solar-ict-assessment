@@ -19,3 +19,23 @@ export function getPermissions(currentUser: User, targetUser: User) {
     canDelete: isGlobalAdmin,
   };
 }
+
+export function formatRole(role: any): string {
+  // Map numeric roles from gRPC
+  const numericMap: Record<number, string> = {
+    [Role.GLOBAL_ADMIN]: "Global Admin",
+    [Role.ADMIN_USER]: "Admin",
+    [Role.STANDARD_USER]: "Standard User",
+  };
+
+  if (typeof role === "number" || !isNaN(Number(role))) {
+    return numericMap[Number(role)] || "Unknown";
+  }
+
+  // Handle legacy string roles (for token compatibility)
+  if (typeof role === "string") {
+    return role.replace("_", " ").toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+  }
+
+  return "Unknown";
+}

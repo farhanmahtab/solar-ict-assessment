@@ -22,6 +22,7 @@ import Link from "next/link";
 
 import { useUserManagement } from "@/hooks/useUserManagement";
 import { EditUserModal } from "@/components/dashboard/modals/EditUserModal";
+import { formatRole } from "@/lib/utils";
 
 export default function ProfilePage() {
   const { user, logout, loading: authLoading, refresh } = useAuth();
@@ -93,7 +94,7 @@ export default function ProfilePage() {
             <StatCard
               icon={<Shield className="text-gray-900" />}
               label="Account Role"
-              value={user.role.replace("_", " ")}
+              value={formatRole(user.role)}
               description="System Identity"
             />
             <StatCard
@@ -131,7 +132,7 @@ export default function ProfilePage() {
                 <DetailItem 
                   icon={<ShieldCheck size={18} />} 
                   label="Access Level" 
-                  value={user.role.replace("_", " ")} 
+                  value={formatRole(user.role)} 
                   badge
                 />
                 <DetailItem 

@@ -6,6 +6,7 @@ import { useUserManagement } from "@/hooks/useUserManagement";
 import { Role } from "@/types";
 import { UserManagementTable } from "@/components/UserManagementTable";
 import { Sidebar } from "@/components/dashboard/Sidebar";
+import { formatRole } from "@/lib/utils";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { CreateUserModal } from "@/components/dashboard/modals/CreateUserModal";
@@ -118,9 +119,9 @@ export default function DashboardPage() {
             <StatCard
               icon={<ShieldCheck className="text-gray-900" />}
               label="Permissions Tier"
-              value={currentUser.role.split("_")[0]}
+              value={formatRole(currentUser.role).split(" ")[0]}
               description={accessLevelDescription}
-              secondary={currentUser.role.split("_")[1] || ""}
+              secondary={formatRole(currentUser.role).split(" ")[1] || ""}
             />
           </div>
           {currentUser.role === Role.ADMIN_USER ||
