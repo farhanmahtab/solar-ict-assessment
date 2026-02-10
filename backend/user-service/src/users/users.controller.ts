@@ -1,7 +1,12 @@
 import { Controller, UseFilters } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import { UsersService } from './users.service';
-import { UpdateUserDto, ChangeRoleDto, CreateUserDto, AdminResetPasswordDto } from './dto/users.dto';
+import {
+  UpdateUserDto,
+  ChangeRoleDto,
+  CreateUserDto,
+  AdminResetPasswordDto,
+} from './dto/users.dto';
 import { Role } from '@prisma/client';
 import { HttpToRpcExceptionFilter } from '../common/filters/http-to-rpc-exception.filter';
 
@@ -24,21 +29,40 @@ export class UsersController {
   }
 
   @GrpcMethod('UserService', 'Update')
-  async update(data: { id: number; dto: UpdateUserDto; requester: { id: number; role: Role } }) {
+  async update(data: {
+    id: number;
+    dto: UpdateUserDto;
+    requester: { id: number; role: Role };
+  }) {
     console.log('[User Service] gRPC update_user for:', data.id);
-    const user = await this.usersService.update(data.id, data.dto, data.requester);
+    const user = await this.usersService.update(
+      data.id,
+      data.dto,
+      data.requester,
+    );
     return { user };
   }
 
   @GrpcMethod('UserService', 'Create')
-  async create(data: { dto: CreateUserDto; requester: { id: number; role: Role } }) {
+  async create(data: {
+    dto: CreateUserDto;
+    requester: { id: number; role: Role };
+  }) {
     const user = await this.usersService.create(data.dto, data.requester);
     return { user };
   }
 
   @GrpcMethod('UserService', 'AdminResetPassword')
-  async adminResetPassword(data: { id: number; dto: AdminResetPasswordDto; requester: { id: number; role: Role } }) {
-    return this.usersService.adminResetPassword(data.id, data.dto, data.requester);
+  async adminResetPassword(data: {
+    id: number;
+    dto: AdminResetPasswordDto;
+    requester: { id: number; role: Role };
+  }) {
+    return this.usersService.adminResetPassword(
+      data.id,
+      data.dto,
+      data.requester,
+    );
   }
 
   @GrpcMethod('UserService', 'Delete')
@@ -48,8 +72,16 @@ export class UsersController {
   }
 
   @GrpcMethod('UserService', 'ChangeRole')
-  async changeRole(data: { id: number; dto: ChangeRoleDto; requester: { id: number; role: Role } }) {
-    const user = await this.usersService.changeRole(data.id, data.dto, data.requester);
+  async changeRole(data: {
+    id: number;
+    dto: ChangeRoleDto;
+    requester: { id: number; role: Role };
+  }) {
+    const user = await this.usersService.changeRole(
+      data.id,
+      data.dto,
+      data.requester,
+    );
     return { user };
   }
 }

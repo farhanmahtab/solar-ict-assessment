@@ -56,7 +56,7 @@ export function useUserManagement(
   const fetchUsers = async () => {
     try {
       const { data } = await api.get("/users");
-      setUsers(data?.users);
+      setUsers(data);
     } catch (err) {
       toast.error("Error", {
         description: `Failed to fetch users data`,
