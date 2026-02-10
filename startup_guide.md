@@ -1,98 +1,100 @@
 # Startup Guide: User Management System
 
-Follow these steps to run the project successfully on the local machine.
+Follow these steps to run the project successfully on your local machine.
 
 ## Prerequisites
 
 - **Node.js**: v20 or higher
 - **npm**: v10 or higher
-- **PostgreSQL**: Ensure a PostgreSQL instance is running and have a valid database .
+- **PostgreSQL**: Ensure a PostgreSQL instance is running.
 
 ---
 
-## 1. Database Configuration
+## 1. Installation
 
-Update the `DATABASE_URL` in the following files with PostgreSQL credentials:
+Install all necessary dependencies for both the frontend and backend services.
 
+### Automatic Installation (Recommended)
+You can use the follow commands from the root directory to install everything:
+
+```bash
+# Install Frontend dependencies
+cd frontend && npm install
+
+# Install Backend microservices
+cd ../backend/api-gateway && npm install
+cd ../auth-service && npm install
+cd ../user-service && npm install
+cd ../notification-service && npm install
+cd ../..
+```
+
+---
+
+## 2. Environment Configuration
+
+### Database Configuration
+Update the `DATABASE_URL` and other secrets in the `.env` files within each service. You must have `.env` files in:
+- `backend/api-gateway/.env`
 - `backend/auth-service/.env`
 - `backend/user-service/.env`
+- `backend/notification-service/.env`
 
-Example:
-`DATABASE_URL="postgresql://postgres:PASSWORD@localhost:5432/user_management?schema=public"`
+Example `DATABASE_URL`:
+`DATABASE_URL="postgresql://user:password@localhost:5432/db_name?schema=public"`
 
 ---
 
-## 2. Initialize Database (Prisma)
+## 3. Database & Prisma Setup
 
-Run these commands in both service directories to sync the schema and generate the Prisma client.
+Run these commands in the specific service directories to initialize the database:
 
 ```bash
 # In Auth Service
 cd backend/auth-service
+npx prisma generate
 npx prisma migrate dev --name init
-npm run seed # This creates the Global Admin
+npm run seed # Creates the Global Admin (globaladmin/password123)
 
 # In User Service
 cd ../user-service
+npx prisma generate
 npx prisma migrate dev --name init
 ```
 
 ---
 
-## 3. Running the Backend Services
+## 4. Running the Project
 
-Open **4 separate terminal windows** and run each service:
+### Start Backend Services
+Use the provided script in the `scripts/` folder to launch all services in separate terminal windows (macOS):
 
-1.  **API Gateway** (Port 3000):
-    ```bash
-    cd backend/api-gateway && npm run start:dev
-    ```
-2.  **Auth Service** (Port 3001):
-    ```bash
-    cd backend/auth-service && npm run start:dev
-    ```
-3.  **User Service** (Port 3002):
-    ```bash
-    cd backend/user-service && npm run start:dev
-    ```
-4.  **Notification Service** (Port 3003):
-    ```bash
-    cd backend/notification-service && npm run start:dev
-    ```
+```bash
+bash scripts/start-backend.sh
+```
 
----
-
-## 4. Running the Frontend
-
-In a **new terminal window**:
+### Start Frontend
+In a new terminal:
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-Visit **[http://localhost:3001](http://localhost:3001)** (or the port shown in terminal) to access the app.
+Visit **[http://localhost:4000](http://localhost:4000)** to access the application dashboard.
 
 ---
 
-## 5. Login Credentials
+## 5. Login Credentials (Post-Seed)
 
-Once the system is up and the seed script has been run:
-
-### Global Admin (Full Access)
-
+### Global Admin
 - **Username**: `globaladmin`
-- **Password**: `password123`
-
-### Standard User (Read Only)
-
-- **Username**: `standarduser`
 - **Password**: `password123`
 
 ---
 
 ## Troubleshooting
 
-- **Port Conflicts**: Ensure ports 3000-3004 are not being used by other applications.
-- **Inter-service Communication**: Ensure the `Notification Service` is running, as `Auth Service` depends on it for registration events.
-- **Typo Note**:Frontend directory is named `frontend`, make sure to `cd` into the correct one.
+- **Prisma Issues**: If you see "Prisma Client could not be found", run `npx prisma generate` in the specific service folder.
+- **Port Conflicts**: Ensure ports 3000, 3002, 3003, 3006, and 4000 are free.
+- **JSX Types Error**: If your IDE shows JSX errors, ensure you have run `npm install` in the `frontend` directory.
