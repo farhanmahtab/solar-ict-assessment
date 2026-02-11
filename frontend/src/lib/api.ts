@@ -22,6 +22,9 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // Reactive fallback: This interceptor now serves as a safety net
+    // The primary token refresh is handled proactively by tokenManager
+    // This only triggers if proactive refresh fails or in edge cases
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {

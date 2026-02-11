@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { User, Role } from "@/types";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { tokenManager } from "@/lib/tokenManager";
 
 // Map string roles from JWT to numeric Role enum values
 function mapRoleToEnum(roleString: string): Role {
@@ -37,6 +38,9 @@ export function useAuth() {
         isValidated: true,
         createdAt: payload.createdAt || "",
       });
+      
+      // Initialize proactive token rotation
+      tokenManager.scheduleTokenRefresh(token);
     } catch (e) {
       console.error(`Failed to parse token\n error: ${e}`);
     } finally {
@@ -63,6 +67,9 @@ export function useAuth() {
         isValidated: true,
         createdAt: payload.createdAt || "",
       });
+      
+      // Reschedule proactive refresh with new token
+      tokenManager.scheduleTokenRefresh(data.accessToken);
     } catch (e) {
       console.error("Refresh failed", e);
       logout();
@@ -70,6 +77,9 @@ export function useAuth() {
   };
 
   const logout = () => {
+    // Clean up token manager
+    tokenManager.cleanup();
+    
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     router.push("/login");

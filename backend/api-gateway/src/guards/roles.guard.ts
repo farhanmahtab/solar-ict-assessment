@@ -28,7 +28,6 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('User not authenticated');
     }
 
-    // Map string roles from JWT to numeric values
     const roleMap: Record<string, number> = {
       'GLOBAL_ADMIN': 0,
       'ADMIN_USER': 1,
