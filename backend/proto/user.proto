@@ -46,12 +46,17 @@ message FindOneRequest {
   Requester requester = 2;
 }
 
+message UpdateUserDto {
+  string email = 1;
+  string username = 2;
+  repeated string permissions = 3;
+  string password = 4;
+}
+
 message UpdateRequest {
   int32 id = 1;
-  string email = 2;
-  string username = 3;
-  repeated string permissions = 4;
-  Requester requester = 5;
+  UpdateUserDto dto = 2;
+  Requester requester = 3;
 }
 
 message DeleteRequest {
@@ -59,23 +64,35 @@ message DeleteRequest {
   Requester requester = 2;
 }
 
-message CreateRequest {
+message CreateUserDto {
   string email = 1;
   string username = 2;
   string password = 3;
   Role role = 4;
-  Requester requester = 5;
+}
+
+message CreateRequest {
+  CreateUserDto dto = 1;
+  Requester requester = 2;
+}
+
+message AdminResetPasswordDto {
+  string newPassword = 1;
 }
 
 message AdminResetPasswordRequest {
   int32 id = 1;
-  string newPassword = 2;
+  AdminResetPasswordDto dto = 2;
   Requester requester = 3;
+}
+
+message ChangeRoleDto {
+  Role role = 1;
 }
 
 message ChangeRoleRequest {
   int32 id = 1;
-  Role role = 2;
+  ChangeRoleDto dto = 2;
   Requester requester = 3;
 }
 

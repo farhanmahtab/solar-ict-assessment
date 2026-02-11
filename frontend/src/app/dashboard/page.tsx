@@ -12,6 +12,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { CreateUserModal } from "@/components/dashboard/modals/CreateUserModal";
 import { EditUserModal } from "@/components/dashboard/modals/EditUserModal";
 import { ResetPasswordModal } from "@/components/dashboard/modals/ResetPasswordModal";
+import { ChangeRoleModal } from "@/components/dashboard/modals/ChangeRoleModal";
 import { Users, ShieldCheck, Activity, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +42,8 @@ export default function DashboardPage() {
     setIsEditModalOpen,
     isResetModalOpen,
     setIsResetModalOpen,
+    isChangeRoleModalOpen,
+    setIsChangeRoleModalOpen,
     selectedUser,
     formData,
     setFormData,
@@ -54,6 +57,7 @@ export default function DashboardPage() {
     openCreateModal,
     openEditModal,
     openResetModal,
+    openChangeRoleModal,
     accessLevelDescription,
   } = useUserManagement(currentUser, authLoading, refresh);
 
@@ -144,7 +148,7 @@ export default function DashboardPage() {
                   currentUser={currentUser}
                   onDelete={handleDelete}
                   onEdit={openEditModal}
-                  onChangeRole={handleChangeRole}
+                  onChangeRole={openChangeRoleModal}
                   onResetPassword={openResetModal}
                 />
               </CardContent>
@@ -201,6 +205,13 @@ export default function DashboardPage() {
         resetPasswordData={resetPasswordData}
         setResetPasswordData={setResetPasswordData}
         onSubmit={handleAdminResetPassword}
+      />
+
+      <ChangeRoleModal
+        isOpen={isChangeRoleModalOpen}
+        onOpenChange={setIsChangeRoleModalOpen}
+        selectedUser={selectedUser}
+        onSubmit={handleChangeRole}
       />
     </div>
   );

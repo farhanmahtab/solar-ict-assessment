@@ -31,6 +31,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { AxiosError } from "axios";
+
+interface ApiErrorResponse {
+  message?: string;
+}
 
 export default function UserDetailPage() {
   const { id } = useParams();
@@ -51,10 +56,11 @@ export default function UserDetailPage() {
     try {
       const { data } = await api.get(`/users/${id}`);
       setTargetUser(data);
-    } catch (err: any) {
-      if (err.response?.status === 403) {
+    } catch (err: unknown) {
+      const error = err as AxiosError<ApiErrorResponse>;
+      if (error.response?.status === 403) {
         setError("Unauthorized: You do not have permission to view this user.");
-      } else if (err.response?.status === 404) {
+      } else if (error.response?.status === 404) {
         setError("User not found.");
       } else {
         setError("Failed to fetch user details.");

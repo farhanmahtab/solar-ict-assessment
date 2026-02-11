@@ -16,6 +16,8 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import type { ClientGrpc } from '@nestjs/microservices';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { RolesGuard } from '../guards/roles.guard';
+import { Roles } from '../decorators/roles.decorator';
 
 enum Role {
   GLOBAL_ADMIN = 0,
@@ -107,7 +109,7 @@ interface RequestWithUser extends Request {
 }
 
 @Controller('users')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController implements OnModuleInit {
   private userService: UserServiceClient;
 
@@ -162,6 +164,7 @@ export class UsersController implements OnModuleInit {
   }
 
   @Delete(':id')
+  @Roles(Role.GLOBAL_ADMIN)
   delete(
     @Param('id', ParseIntPipe) id: number,
     @Req() req: RequestWithUser,
@@ -173,6 +176,7 @@ export class UsersController implements OnModuleInit {
   }
 
   @Post()
+  @Roles(Role.ADMIN_USER, Role.GLOBAL_ADMIN)
   create(
     @Body() dto: CreateUserDto,
     @Req() req: RequestWithUser,
@@ -186,6 +190,7 @@ export class UsersController implements OnModuleInit {
   }
 
   @Post(':id/reset-password')
+  @Roles(Role.ADMIN_USER, Role.GLOBAL_ADMIN)
   adminResetPassword(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: AdminResetPasswordDto,
@@ -199,6 +204,7 @@ export class UsersController implements OnModuleInit {
   }
 
   @Post(':id/role')
+  @Roles(Role.GLOBAL_ADMIN)
   changeRole(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: ChangeRoleDto,

@@ -4,6 +4,16 @@ import { User, Role } from "@/types";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 
+// Map string roles from JWT to numeric Role enum values
+function mapRoleToEnum(roleString: string): Role {
+  const roleMap: Record<string, Role> = {
+    'GLOBAL_ADMIN': Role.GLOBAL_ADMIN,
+    'ADMIN_USER': Role.ADMIN_USER,
+    'STANDARD_USER': Role.STANDARD_USER,
+  };
+  return roleMap[roleString] ?? Role.STANDARD_USER;
+}
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,7 +31,7 @@ export function useAuth() {
       setUser({
         id: payload.sub,
         username: payload.username,
-        role: payload.role as Role,
+        role: mapRoleToEnum(payload.role),
         email: payload.email,
         permissions: payload.permissions || [],
         isValidated: true,
@@ -47,7 +57,7 @@ export function useAuth() {
       setUser({
         id: payload.sub,
         username: payload.username,
-        role: payload.role as Role,
+        role: mapRoleToEnum(payload.role),
         email: payload.email,
         permissions: payload.permissions || [],
         isValidated: true,

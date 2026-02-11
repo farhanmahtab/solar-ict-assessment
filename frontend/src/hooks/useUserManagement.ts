@@ -26,6 +26,7 @@ export function useUserManagement(
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [isChangeRoleModalOpen, setIsChangeRoleModalOpen] = useState(false);
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
@@ -165,13 +166,23 @@ export function useUserManagement(
       const { data } = await api.post(`/users/${id}/role`, { role });
       setUsers(users.map((u) => (u.id === id ? data : u)));
       toast.success("Role updated", {
-        description: `User role changed to ${role}.`,
+        description: `User role changed to ${getRoleDescription(role)}.`,
       });
     } catch (err) {
       toast.error("Error", { description: "Failed to change role." });
     }
   };
 
+  const getRoleDescription = (role: Role) => {
+    switch (role) {
+      case 1:
+        return "Admin";
+      case 2:
+        return "Standard User";
+      default:
+        return "User";
+    }
+  };
   const openCreateModal = () => {
     setFormData({
       username: "",
@@ -210,6 +221,8 @@ export function useUserManagement(
     setIsEditModalOpen,
     isResetModalOpen,
     setIsResetModalOpen,
+    isChangeRoleModalOpen,
+    setIsChangeRoleModalOpen,
     selectedUser,
     formData,
     setFormData,
@@ -223,6 +236,10 @@ export function useUserManagement(
     openCreateModal,
     openEditModal,
     openResetModal,
+    openChangeRoleModal: (user: User) => {
+      setSelectedUser(user);
+      setIsChangeRoleModalOpen(true);
+    },
     fetchUsers,
     accessLevelDescription,
   };

@@ -14,6 +14,22 @@ import {
 import { Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
+// Helper function to convert numeric Role to Prisma enum string
+function convertRoleToPrismaEnum(role: Role | number): 'GLOBAL_ADMIN' | 'ADMIN_USER' | 'STANDARD_USER' {
+  // If role is already a string, return it
+  if (typeof role === 'string') {
+    return role as 'GLOBAL_ADMIN' | 'ADMIN_USER' | 'STANDARD_USER';
+  }
+  
+  // Convert numeric role to string
+  const roleMap: Record<number, 'GLOBAL_ADMIN' | 'ADMIN_USER' | 'STANDARD_USER'> = {
+    0: 'GLOBAL_ADMIN',
+    1: 'ADMIN_USER',
+    2: 'STANDARD_USER',
+  };
+  return roleMap[role] ?? 'STANDARD_USER';
+}
+
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
@@ -75,15 +91,6 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
 
-    // RBAC logic
-    if (requester.role === Role.STANDARD_USER && requester.id !== id) {
-      throw new ForbiddenException('You can only update your own profile');
-    }
-
-    if (requester.role === Role.ADMIN_USER && user.role === Role.GLOBAL_ADMIN) {
-      throw new ForbiddenException('Admins cannot edit Global Admins');
-    }
-
     const updateData: any = { ...dto };
 
     // Check unique constraints if email or username is changing
@@ -122,18 +129,6 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
 
-    if (requester.role === Role.STANDARD_USER) {
-      throw new ForbiddenException(
-        'Standard users cannot reset others passwords',
-      );
-    }
-
-    if (requester.role === Role.ADMIN_USER && user.role === Role.GLOBAL_ADMIN) {
-      throw new ForbiddenException(
-        'Admins cannot reset Global Admin passwords',
-      );
-    }
-
     const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
     return this.prisma.user.update({
       where: { id },
@@ -142,9 +137,6 @@ export class UsersService {
   }
 
   async delete(id: number, requester: { id: number; role: Role }) {
-    if (requester.role !== Role.GLOBAL_ADMIN) {
-      throw new ForbiddenException('Only Global Admins can delete users');
-    }
     return this.prisma.user.delete({ where: { id } });
   }
 
@@ -153,12 +145,10 @@ export class UsersService {
     dto: ChangeRoleDto,
     requester: { id: number; role: Role },
   ) {
-    if (requester.role !== Role.GLOBAL_ADMIN) {
-      throw new ForbiddenException('Only Global Admins can change roles');
-    }
+    const prismaRole = convertRoleToPrismaEnum(dto.role);
     return this.prisma.user.update({
       where: { id },
-      data: { role: dto.role },
+      data: { role: prismaRole },
     });
   }
 }

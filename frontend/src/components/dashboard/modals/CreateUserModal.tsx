@@ -91,7 +91,6 @@ export function CreateUserModal({
             >
               <option value={Role.STANDARD_USER}>Standard User</option>
               <option value={Role.ADMIN_USER}>Admin User</option>
-              <option value={Role.GLOBAL_ADMIN}>Global Admin</option>
             </select>
           </div>
           <DialogFooter className="pt-4">

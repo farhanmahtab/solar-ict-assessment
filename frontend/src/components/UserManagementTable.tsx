@@ -38,7 +38,7 @@ interface Props {
   currentUser: User;
   onDelete: (id: number) => void;
   onEdit: (user: User) => void;
-  onChangeRole: (id: number, role: Role) => void;
+  onChangeRole: (user: User) => void;
   onResetPassword: (id: number) => void;
 }
 
@@ -193,20 +193,11 @@ export function UserManagementTable({
 
                       {permissions.canChangeRole && (
                         <DropdownMenuItem
-                          onClick={() =>
-                            onChangeRole(
-                              user.id,
-                              user.role === Role.ADMIN_USER
-                                ? Role.STANDARD_USER
-                                : Role.ADMIN_USER,
-                            )
-                          }
+                          onClick={() => onChangeRole(user)}
                           className="gap-2 focus:bg-gray-50 cursor-pointer rounded-md text-sm py-2 px-2 transition-colors"
                         >
                           <ShieldAlert size={16} className="text-gray-400" />
-                          {user.role === Role.ADMIN_USER
-                            ? "Demote to User"
-                            : "Promote to Admin"}
+                          Change Role
                         </DropdownMenuItem>
                       )}
 
