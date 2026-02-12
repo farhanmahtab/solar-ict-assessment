@@ -6,7 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Modern User Management",
+  title: "Solar ICT Task",
   description: "NestJS Microservices & Next.js 15",
 };
 

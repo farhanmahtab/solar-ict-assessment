@@ -16,9 +16,7 @@ class TokenManager {
   private isRefreshing = false;
   private readonly REFRESH_BUFFER_MS = 60000; // Refresh 1 minute before expiration
 
-  /**
-   * Decode JWT and extract expiration time
-   */
+
   private decodeToken(token: string): JWTPayload | null {
     try {
       return jwtDecode<JWTPayload>(token);
@@ -28,9 +26,6 @@ class TokenManager {
     }
   }
 
-  /**
-   * Calculate milliseconds until token expiration
-   */
   private getTimeUntilExpiration(token: string): number | null {
     const decoded = this.decodeToken(token);
     if (!decoded || !decoded.exp) return null;
@@ -42,9 +37,6 @@ class TokenManager {
     return timeUntilExpiration;
   }
 
-  /**
-   * Refresh tokens by calling the refresh endpoint
-   */
   private async refreshTokens(): Promise<void> {
     if (this.isRefreshing) {
       console.log('[TokenManager] Refresh already in progress, skipping...');
@@ -64,7 +56,6 @@ class TokenManager {
 
       const { data } = await api.post('/auth/refresh', { refreshToken });
       
-      // Update tokens in localStorage
       localStorage.setItem('accessToken', data.accessToken);
       localStorage.setItem('refreshToken', data.refreshToken);
 
@@ -89,11 +80,7 @@ class TokenManager {
     }
   }
 
-  /**
-   * Schedule automatic token refresh before expiration
-   */
   public scheduleTokenRefresh(accessToken: string): void {
-    // Clear any existing timer
     this.clearRefreshTimer();
 
     const timeUntilExpiration = this.getTimeUntilExpiration(accessToken);
